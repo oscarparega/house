@@ -33,8 +33,8 @@ npm run build
 npm run db:down
 ```
 
-`db:setup` crea la base, aplica las migraciones y carga de forma idempotente la
-propiedad de ejemplo de RE/MAX.
+`db:setup` crea la base, aplica las migraciones y carga de forma idempotente las
+propiedades de ejemplo de RE/MAX.
 
 ## API para modelos
 

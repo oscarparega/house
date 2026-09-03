@@ -4,7 +4,11 @@ import {
   canonicalizeListingUrl,
   propertyInputSchema,
 } from "../src/lib/property-input";
-import { remaxSeedProperty } from "../src/lib/remax-seed";
+import {
+  remaxDelValleProperty,
+  remaxSeedProperties,
+  remaxSeedProperty,
+} from "../src/lib/remax-seed";
 
 test("the RE/MAX seed satisfies the ingestion contract", () => {
   const parsed = propertyInputSchema.parse(remaxSeedProperty);
@@ -13,6 +17,22 @@ test("the RE/MAX seed satisfies the ingestion contract", () => {
   assert.deepEqual(parsed.property.coordinates, {
     latitude: 19.3986,
     longitude: -99.1601,
+  });
+});
+
+test("every RE/MAX seed satisfies the ingestion contract", () => {
+  const parsed = remaxSeedProperties.map((property) =>
+    propertyInputSchema.parse(property),
+  );
+  assert.deepEqual(
+    parsed.map((property) => property.source.listingId),
+    ["688205", "682749"],
+  );
+  assert.equal(remaxDelValleProperty.images.length, 9);
+  assert.equal(remaxDelValleProperty.features.length, 22);
+  assert.deepEqual(remaxDelValleProperty.property.coordinates, {
+    latitude: 19.3967,
+    longitude: -99.1682,
   });
 });
 
