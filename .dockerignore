@@ -1,0 +1,9 @@
+node_modules
+.next
+src/generated
+public/maplibre
+.git
+.env*
+outputs
+*.tsbuildinfo
+.DS_Store

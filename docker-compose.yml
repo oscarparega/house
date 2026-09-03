@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    environment:
+      POSTGRES_DB: house
+      POSTGRES_USER: house
+      POSTGRES_PASSWORD: house_dev
+    ports:
+      - "5438:5432"
+    volumes:
+      - house_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U house -d house"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  house_postgres:
