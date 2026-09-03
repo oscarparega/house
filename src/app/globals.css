@@ -88,9 +88,9 @@ button,select { cursor:pointer; }
 .map-note strong { font:25px Georgia,serif; }
 .map-note span { font-size:9px; text-transform:uppercase; }
 .map-pin { position:relative; width:28px; height:28px; padding:0; border:0; background:transparent; }
-.map-pin::before { content:""; position:absolute; left:9px; top:9px; width:10px; height:10px; border:1px solid white; border-radius:50%; background:var(--ink); box-shadow:0 2px 6px #0007; }
+.map-pin::before { content:""; position:absolute; left:50%; top:50%; width:13px; height:13px; border:1px solid white; border-radius:50%; background:var(--ink); box-shadow:0 2px 6px #0007; transform:translate(-50%,-50%); }
 .map-pin span { display:none; }
-.map-pin.is-selected::before { left:8.5px; top:8.5px; width:11px; height:11px; background:var(--orange); box-shadow:0 2px 8px #0008; }
+.map-pin.is-selected::before { width:14px; height:14px; background:var(--orange); box-shadow:0 2px 8px #0008; }
 .map-selection { position:absolute; z-index:3; left:20px; bottom:24px; min-width:260px; border:0; border-radius:13px; background:var(--ink); color:white; padding:14px 18px; box-shadow:var(--shadow); text-align:left; }
 .map-selection span,.map-selection strong,.map-selection small { display:block; }
 .map-selection span { color:var(--lime); font-size:10px; text-transform:uppercase; }
@@ -177,7 +177,7 @@ button,select { cursor:pointer; }
 .full-fact strong { margin-top:4px; overflow-wrap:anywhere; font-size:12px; }
 .full-description { margin:0; color:#45504a; line-height:1.72; white-space:pre-line; }
 .detail-location-map { width:100%; height:320px; margin-bottom:14px; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#e4e2da; }
-.detail-map-pin { width:13px; height:13px; border:2px solid white; border-radius:50%; background:var(--orange); box-shadow:0 2px 8px #0008; }
+.detail-map-pin { width:17px; height:17px; border:2px solid white; border-radius:50%; background:var(--orange); box-shadow:0 2px 8px #0008; }
 .feature-columns { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 .feature-columns>div { display:flex; flex-wrap:wrap; align-content:start; gap:7px; padding:14px; border-radius:10px; background:#f7f5ee; }
 .feature-columns h3 { flex:0 0 100%; margin:0 0 5px; font:16px Georgia,serif; }
