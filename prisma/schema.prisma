@@ -7,3 +7,119 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  LAND
+  OTHER
+}
+
+enum OperationType {
+  SALE
+}
+
+enum DecisionStatus {
+  NEW
+  INTERESTED
+  CONTACTED
+  VISIT_SCHEDULED
+  VISITED
+  OFFER_MADE
+  REJECTED
+  PURCHASED
+}
+
+enum FeatureCategory {
+  AREA
+  EQUIPMENT
+  OTHER
+}
+
+model Property {
+  id                  String            @id @default(cuid())
+  sourceProvider      String
+  sourceUrl           String            @unique
+  sourceListingId     String?
+  sourceListingKey    String?
+  sourceObservedAt    DateTime
+  sourceMetadata      Json
+  title               String
+  description         String?
+  propertyType        PropertyType
+  operationType       OperationType     @default(SALE)
+  priceAmount         Decimal?          @db.Decimal(14, 2)
+  priceCurrency       String?           @db.VarChar(3)
+  street              String?
+  exteriorNumber      String?
+  interiorNumber      String?
+  neighborhood        String?
+  municipality        String?
+  state               String?
+  postalCode          String?
+  countryCode         String            @default("MX") @db.VarChar(2)
+  formattedAddress    String?
+  latitude            Decimal?          @db.Decimal(9, 6)
+  longitude           Decimal?          @db.Decimal(9, 6)
+  landAreaM2          Decimal?          @db.Decimal(10, 2)
+  constructionAreaM2  Decimal?          @db.Decimal(10, 2)
+  bedrooms            Int?
+  bathrooms           Decimal?          @db.Decimal(4, 1)
+  parkingSpaces       Int?
+  parkingType         String?
+  serviceRoom         Boolean?
+  propertyAgeYears    Int?
+  condition           String?
+  orientation         String?
+  landUse             String?
+  buildingLevels      Int?
+  unitFloor           Int?
+  maintenanceAmount   Decimal?          @db.Decimal(12, 2)
+  maintenanceCurrency String?           @db.VarChar(3)
+  technicalSheetQrUrl String?
+  agentName           String?
+  agentAvatarUrl      String?
+  agentPhones         String[]          @default([])
+  agentEmail          String?
+  officeName          String?
+  sourceOfficeId      String?
+  decisionStatus      DecisionStatus    @default(NEW)
+  isFavorite          Boolean           @default(false)
+  rating              Int?
+  notes               String?
+  visitAt             DateTime?
+  rejectionReason     String?
+  archivedAt          DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  images              PropertyImage[]
+  features            PropertyFeature[]
+
+  @@unique([sourceProvider, sourceListingId])
+  @@index([decisionStatus])
+  @@index([archivedAt])
+  @@index([isFavorite])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  url        String
+  alt        String?
+  sortOrder  Int
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, url])
+  @@index([propertyId, sortOrder])
+}
+
+model PropertyFeature {
+  id         String          @id @default(cuid())
+  propertyId String
+  category   FeatureCategory
+  name       String
+  property   Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, category, name])
+  @@index([propertyId])
+}

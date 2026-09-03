@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -8,13 +9,13 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "House",
-  description: "House",
+  title: "Casa Clara — Mi radar inmobiliario",
+  description: "Organiza, compara y visita las propiedades que te interesan.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={geistSans.variable}>
+    <html lang="es-MX" className={geistSans.variable}>
       <body>{children}</body>
     </html>
   );
