@@ -4,6 +4,7 @@ import {
   canonicalizeListingUrl,
   propertyInputSchema,
 } from "../src/lib/property-input";
+import { pulppoSeedProperty } from "../src/lib/pulppo-seed";
 import {
   remaxDelValleProperty,
   remaxSeedProperties,
@@ -33,6 +34,17 @@ test("every RE/MAX seed satisfies the ingestion contract", () => {
   assert.deepEqual(remaxDelValleProperty.property.coordinates, {
     latitude: 19.3967,
     longitude: -99.1682,
+  });
+});
+
+test("the Pulppo seed preserves its public listing data", () => {
+  const parsed = propertyInputSchema.parse(pulppoSeedProperty);
+  assert.equal(parsed.source.listingId, "6a4e51104f6aa3a774e73209");
+  assert.equal(parsed.source.listingKey, "DGU-651");
+  assert.equal(parsed.images.length, 16);
+  assert.deepEqual(parsed.property.coordinates, {
+    latitude: 19.389217026846296,
+    longitude: -99.16380395749265,
   });
 });
 

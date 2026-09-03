@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toggleFavoriteAction } from "@/app/actions";
+import { MaterialIcon } from "@/components/material-icon";
 import { PropertyDecisionPanel } from "@/components/property-decision-panel";
 import { PropertyGallery } from "@/components/property-gallery";
 import { PropertyLocationMap } from "@/components/property-location-map";
@@ -48,8 +49,8 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
   return (
     <main className="detail-page">
       <header className="detail-topbar">
-        <Link href="/" className="detail-brand"><span>⌂</span><strong>Casa Clara</strong></Link>
-        <Link href="/" className="back-link">← Volver al mapa y la lista</Link>
+        <Link href="/" className="detail-brand"><span><MaterialIcon name="home" /></span><strong>Casa Clara</strong></Link>
+        <Link href="/" className="back-link"><MaterialIcon name="arrowBack" /> Volver al mapa y la lista</Link>
       </header>
 
       <div className="detail-layout">
@@ -72,7 +73,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
                 aria-pressed={property.isFavorite}
                 title={property.isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
               >
-                {property.isFavorite ? "♥" : "♡"}
+                <MaterialIcon name={property.isFavorite ? "favorite" : "favoriteBorder"} />
               </button>
             </form>
           </div>

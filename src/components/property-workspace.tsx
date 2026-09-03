@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { toggleFavoriteAction } from "@/app/actions";
+import { MaterialIcon } from "@/components/material-icon";
 import type { PropertyDto } from "@/lib/property-store";
 import { PropertyEditor } from "@/components/property-editor";
 import { PropertyMap } from "@/components/property-map";
@@ -49,12 +50,10 @@ function PropertyCard({
   property,
   selected,
   onSelect,
-  onEdit,
 }: {
   property: PropertyDto;
   selected: boolean;
   onSelect: () => void;
-  onEdit: () => void;
 }) {
   const hero = property.images[0];
   return (
@@ -82,19 +81,25 @@ function PropertyCard({
             <Metric value={property.parkingSpaces} label="autos" />
             <Metric value={property.constructionAreaM2 ? `${property.constructionAreaM2} m²` : null} label="const." />
           </div>
-          {property.latitude === null && <span className="no-location">⌖ Sin ubicación en mapa</span>}
+          {property.latitude === null && <span className="no-location"><MaterialIcon name="locationOff" /> Sin ubicación en mapa</span>}
         </div>
       </button>
 
       <div className="card-actions">
         <form action={toggleFavoriteAction.bind(null, property.id)}>
           <button className={`favorite-button${property.isFavorite ? " is-active" : ""}`} type="submit" aria-label={property.isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
-            {property.isFavorite ? "♥" : "♡"}
+            <MaterialIcon name={property.isFavorite ? "favorite" : "favoriteBorder"} />
           </button>
         </form>
-        <button type="button" className="edit-button" onClick={onEdit}>Editar</button>
-        <Link className="detail-button" href={`/properties/${property.id}`}>Ver detalle →</Link>
       </div>
+      <Link
+        className="card-detail-button"
+        href={`/properties/${property.id}`}
+        aria-label={`Ver ${property.title}`}
+        title="Ver propiedad"
+      >
+        <MaterialIcon name="arrowForward" />
+      </Link>
     </article>
   );
 }
@@ -133,7 +138,7 @@ export function PropertyWorkspace({ initialProperties }: { initialProperties: Pr
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">⌂</span>
+          <span className="brand-mark"><MaterialIcon name="home" /></span>
           <div><strong>Casa Clara</strong><small>mi radar inmobiliario</small></div>
         </div>
         <div className="portfolio-count">
@@ -150,7 +155,7 @@ export function PropertyWorkspace({ initialProperties }: { initialProperties: Pr
       </header>
 
       <section className="filterbar" aria-label="Filtros">
-        <label className="search-box"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Busca colonia, calle o clave…" /></label>
+        <label className="search-box"><span><MaterialIcon name="search" /></span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Busca colonia, calle o clave…" /></label>
         <select value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Estado de decisión">
           <option value="ALL">Todos los estados</option>
           {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
@@ -181,17 +186,17 @@ export function PropertyWorkspace({ initialProperties }: { initialProperties: Pr
         <div className="list-pane">
           {filtered.length ? (
             filtered.map((property) => (
-              <PropertyCard key={property.id} property={property} selected={property.id === selectedId} onSelect={() => setSelectedId(property.id)} onEdit={() => setEditingId(property.id)} />
+              <PropertyCard key={property.id} property={property} selected={property.id === selectedId} onSelect={() => setSelectedId(property.id)} />
             ))
           ) : (
-            <div className="empty-state"><span>⌂</span><h2>No hay propiedades aquí</h2><p>Ajusta los filtros o agrega una mediante la API local.</p></div>
+            <div className="empty-state"><span><MaterialIcon name="home" /></span><h2>No hay propiedades aquí</h2><p>Ajusta los filtros o agrega una mediante la API local.</p></div>
           )}
         </div>
         <div className="map-pane">
           <PropertyMap properties={filtered} selectedId={selectedId} onSelect={setSelectedId} />
           {view === "map" && selectedId && (() => {
             const selected = filtered.find((item) => item.id === selectedId);
-            return selected ? <button type="button" className="map-selection" onClick={() => setEditingId(selected.id)}><span>{selected.neighborhood ?? typeLabels[selected.propertyType]}</span><strong>{money(selected.priceAmount, selected.priceCurrency)}</strong><small>Editar propiedad →</small></button> : null;
+            return selected ? <button type="button" className="map-selection" onClick={() => setEditingId(selected.id)}><span>{selected.neighborhood ?? typeLabels[selected.propertyType]}</span><strong>{money(selected.priceAmount, selected.priceCurrency)}</strong><small>Editar propiedad <MaterialIcon name="arrowForward" /></small></button> : null;
           })()}
         </div>
       </section>

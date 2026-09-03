@@ -34,7 +34,7 @@ npm run db:down
 ```
 
 `db:setup` crea la base, aplica las migraciones y carga de forma idempotente las
-propiedades de ejemplo de RE/MAX.
+propiedades de ejemplo de RE/MAX y Pulppo.
 
 ## API para modelos
 

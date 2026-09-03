@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MaterialIcon } from "@/components/material-icon";
 
 type GalleryImage = {
   id: string;
@@ -76,13 +77,13 @@ export function PropertyGallery({
           <div className="carousel-shell">
             <div className="carousel-topbar">
               <span>{activeIndex + 1} / {images.length}</span>
-              <button type="button" onClick={() => setActiveIndex(null)} aria-label="Cerrar galería">×</button>
+              <button type="button" onClick={() => setActiveIndex(null)} aria-label="Cerrar galería"><MaterialIcon name="close" /></button>
             </div>
             <div className="carousel-stage">
-              {images.length > 1 && <button type="button" className="carousel-arrow previous" onClick={showPrevious} aria-label="Foto anterior">‹</button>}
+              {images.length > 1 && <button type="button" className="carousel-arrow previous" onClick={showPrevious} aria-label="Foto anterior"><MaterialIcon name="chevronLeft" /></button>}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={images[activeIndex].url} alt={images[activeIndex].alt ?? `${title}, foto ${activeIndex + 1}`} />
-              {images.length > 1 && <button type="button" className="carousel-arrow next" onClick={showNext} aria-label="Foto siguiente">›</button>}
+              {images.length > 1 && <button type="button" className="carousel-arrow next" onClick={showNext} aria-label="Foto siguiente"><MaterialIcon name="chevronRight" /></button>}
             </div>
             <div className="carousel-caption">
               <span>{images[activeIndex].alt ?? title}</span>

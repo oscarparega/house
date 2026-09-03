@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { pulppoSeedProperty } from "../src/lib/pulppo-seed";
 import { remaxSeedProperties } from "../src/lib/remax-seed";
 import { upsertProperty } from "../src/lib/property-store";
 
@@ -15,7 +16,7 @@ const prisma = new PrismaClient({
 });
 
 try {
-  for (const property of remaxSeedProperties) {
+  for (const property of [...remaxSeedProperties, pulppoSeedProperty]) {
     const result = await upsertProperty(prisma, property);
     console.log(`${result.action}: ${result.property.title}`);
   }

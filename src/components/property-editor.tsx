@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { savePropertyAction, setArchivedAction } from "@/app/actions";
+import { MaterialIcon } from "@/components/material-icon";
 import type { PropertyDto } from "@/lib/property-store";
 
 type Props = { property: PropertyDto; onClose: () => void };
@@ -66,7 +67,7 @@ export function PropertyEditor({ property, onClose }: Props) {
             <span className="eyebrow">Editar propiedad</span>
             <h2>{property.title}</h2>
           </div>
-          <button className="icon-button" type="button" onClick={onClose} aria-label="Cerrar editor">×</button>
+          <button className="icon-button" type="button" onClick={onClose} aria-label="Cerrar editor"><MaterialIcon name="close" /></button>
         </div>
 
         <form action={savePropertyAction} className="editor-form">
