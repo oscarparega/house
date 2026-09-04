@@ -55,6 +55,10 @@ test("canonical URLs discard tracking parameters, fragments, and trailing slashe
     ),
     "https://remax.com.mx/propiedad/688205",
   );
+  assert.equal(
+    canonicalizeListingUrl("https://portal.mx/listing?property=42&utm_campaign=test"),
+    "https://portal.mx/listing?property=42",
+  );
 });
 
 test("coordinates must be valid and provided as a complete pair", () => {
