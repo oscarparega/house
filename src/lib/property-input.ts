@@ -88,7 +88,11 @@ export type PropertyInput = z.infer<typeof propertyInputSchema>;
 export function canonicalizeListingUrl(value: string) {
   const url = new URL(value);
   url.hash = "";
-  url.search = "";
+  const trackingNames = new Set(["fbclid", "gclid", "msclkid", "ref", "referrer"]);
+  for (const key of [...url.searchParams.keys()]) {
+    if (key.toLowerCase().startsWith("utm_") || trackingNames.has(key.toLowerCase())) url.searchParams.delete(key);
+  }
+  url.searchParams.sort();
   url.pathname = url.pathname.replace(/\/+$/, "") || "/";
   return url.toString();
 }

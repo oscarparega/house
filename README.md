@@ -22,6 +22,12 @@ npm run db:setup
 npm run dev
 ```
 
+En otra terminal inicia el procesador de importaciones:
+
+```bash
+npm run worker:imports
+```
+
 Open [http://localhost:3000](http://localhost:3000). PostgreSQL is exposed locally on port `5438` so it can run alongside the sibling CDMX project.
 
 Useful commands:
@@ -36,29 +42,36 @@ npm run db:down
 `db:setup` crea la base, aplica las migraciones y carga de forma idempotente las
 propiedades de ejemplo de RE/MAX y Pulppo.
 
-## API para modelos
+## Agregar propiedades
 
-Un modelo con control remoto del navegador debe inspeccionar la publicación y
-enviar los datos ya estructurados a `POST /api/properties`. El servidor no
-intenta descargar ni extraer la página original.
+La acción **Agregar** ofrece dos flujos:
 
-El contrato requiere `schemaVersion: 1` y cuatro bloques: `source`, `property`,
-`images`, `features` y `contact`. La forma canónica y un ejemplo completo están
-en [`src/lib/remax-seed.ts`](src/lib/remax-seed.ts). Los campos desconocidos o
-específicos del portal deben preservarse en `source.rawMetadata`.
+- **Desde una URL:** crea un trabajo asíncrono, intenta leer HTML, JSON-LD,
+  Open Graph y estado embebido, usa Firecrawl si el portal bloquea la descarga
+  directa y finalmente puede normalizar el resultado con OpenAI. El resultado
+  siempre queda como borrador para revisión.
+- **Captura manual:** muestra todos los campos del modelo. Las fotografías son
+  URLs opcionales, una por línea; esta versión no sube archivos.
 
-```bash
-curl -X POST http://localhost:3000/api/properties \
-  -H 'content-type: application/json' \
-  --data @property.json
-```
+Los endpoints públicos son:
 
-La primera solicitud responde `201` y las siguientes para la misma URL o ID de
-portal responden `200`. Una actualización reemplaza los datos de la publicación
-pero conserva estado, favoritos, calificación, notas y visita.
+- `POST /api/imports` con `{ "url": "…", "turnstileToken": "…" }`.
+- `GET /api/imports/:id` para consultar el avance y el borrador resultante.
+- Las capturas manuales y la revisión usan Server Actions validadas.
 
-> La API no tiene autenticación porque esta primera versión es exclusivamente
-> local. No expongas el servicio a internet antes de agregar control de acceso.
+El importador nunca entrega herramientas de navegación al modelo. El contenido
+de la página se trata como datos no confiables y la respuesta se limita al
+contrato de `PropertyInput` mediante Structured Outputs.
+
+En producción configura Turnstile y un secreto de hash. Firecrawl y OpenAI son
+opcionales: sin sus llaves, las páginas que exponen metadatos tradicionales aún
+se pueden importar. Los límites predeterminados son 500 créditos de Firecrawl y
+100 llamadas de IA por mes; pueden cambiarse mediante variables de entorno.
+
+> La lectura y los controles siguen siendo públicos por decisión de producto.
+> Turnstile, límites por IP y presupuestos reducen abuso automatizado, pero no
+> impiden que una persona modifique información. Agrega autenticación si el
+> despliegue deja de ser un tracker personal.
 
 ## Coolify deployment
 
@@ -68,4 +81,8 @@ Create a Git-based Docker Compose application with:
 - Compose file: `/docker-compose.coolify.yml`
 - Auto Deploy enabled for the deployment branch
 
-Configure `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` from `.env.coolify.example`. Assign the public domain to the `app` service on container port `3000`; do not expose the `database` or `bootstrap` services. The `postgres-data` volume persists the database and should be backed up in production.
+Configure las variables de `.env.coolify.example`. `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+se pasa durante el build; las demás llaves permanecen únicamente en el servidor.
+Asigna el dominio público al servicio `app` en el puerto `3000`; no expongas
+`database`, `bootstrap` ni `import-worker`. El volumen `postgres-data` debe tener
+respaldos periódicos.

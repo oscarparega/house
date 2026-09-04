@@ -36,10 +36,24 @@ enum FeatureCategory {
   OTHER
 }
 
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ImportStatus {
+  QUEUED
+  FETCHING
+  RENDERING
+  EXTRACTING
+  READY
+  FAILED
+}
+
 model Property {
   id                  String            @id @default(cuid())
   sourceProvider      String
-  sourceUrl           String            @unique
+  sourceUrl           String?           @unique
   sourceListingId     String?
   sourceListingKey    String?
   sourceObservedAt    DateTime
@@ -90,15 +104,56 @@ model Property {
   visitAt             DateTime?
   rejectionReason     String?
   archivedAt          DateTime?
+  publicationStatus   PublicationStatus @default(PUBLISHED)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
   images              PropertyImage[]
   features            PropertyFeature[]
+  imports             PropertyImport[]
 
   @@unique([sourceProvider, sourceListingId])
   @@index([decisionStatus])
   @@index([archivedAt])
   @@index([isFavorite])
+  @@index([publicationStatus])
+}
+
+model PropertyImport {
+  id                  String       @id @default(cuid())
+  url                 String
+  canonicalUrl        String
+  status              ImportStatus @default(QUEUED)
+  strategy            String?
+  provider            String?
+  retryCount          Int          @default(0)
+  draftData           Json?
+  evidence            Json?
+  errorMessage        String?
+  inputTokens         Int?
+  outputTokens        Int?
+  firecrawlCredits    Int          @default(0)
+  processingStartedAt DateTime?
+  completedAt         DateTime?
+  propertyId          String?
+  property            Property?    @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@index([status, createdAt])
+  @@index([canonicalUrl])
+  @@index([createdAt])
+}
+
+model MutationAudit {
+  id         String   @id @default(cuid())
+  action     String
+  targetType String
+  targetId   String?
+  ipHash     String
+  createdAt  DateTime @default(now())
+
+  @@index([ipHash, action, createdAt])
+  @@index([action, createdAt])
 }
 
 model PropertyImage {

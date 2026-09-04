@@ -11,6 +11,7 @@
     "prebuild": "node scripts/copy-maplibre-worker.mjs",
     "build": "next build",
     "start": "next start",
+    "worker:imports": "tsx scripts/import-worker.ts",
     "postinstall": "prisma generate",
     "lint": "eslint . --ignore-pattern .next --ignore-pattern src/generated --ignore-pattern public/maplibre",
     "test": "node --import tsx --test tests/**/*.test.ts",

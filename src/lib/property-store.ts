@@ -151,8 +151,18 @@ export type PropertyDto = ReturnType<typeof toPropertyDto>;
 
 export async function listProperties(db: PrismaClient) {
   const records = await db.property.findMany({
+    where: { publicationStatus: "PUBLISHED" },
     include: includeRelations,
     orderBy: [{ archivedAt: "asc" }, { updatedAt: "desc" }],
+  });
+  return records.map(toPropertyDto);
+}
+
+export async function listDraftProperties(db: PrismaClient) {
+  const records = await db.property.findMany({
+    where: { publicationStatus: "DRAFT" },
+    include: includeRelations,
+    orderBy: { updatedAt: "desc" },
   });
   return records.map(toPropertyDto);
 }

@@ -54,6 +54,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
       </header>
 
       <div className="detail-layout">
+        {property.publicationStatus === "DRAFT" && <div className="draft-banner"><span><MaterialIcon name="draft" /> Esta propiedad es un borrador</span><Link href={`/properties/${property.id}/review`}>Revisar y publicar</Link></div>}
         <div className="detail-title-row">
           <div>
             <span className="detail-kicker">{typeLabels[property.propertyType]} · En venta</span>
@@ -164,7 +165,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
               <Fact label="Última actualización" value={new Intl.DateTimeFormat("es-MX", { dateStyle: "long", timeStyle: "short" }).format(new Date(property.updatedAt))} />
             </div>
             <div className="source-buttons">
-              <a href={property.sourceUrl} target="_blank" rel="noreferrer">Abrir publicación original ↗</a>
+              {property.sourceUrl && <a href={property.sourceUrl} target="_blank" rel="noreferrer">Abrir publicación original ↗</a>}
               {property.technicalSheetQrUrl && <a href={property.technicalSheetQrUrl} target="_blank" rel="noreferrer">Abrir ficha QR ↗</a>}
             </div>
             <details className="metadata-details">

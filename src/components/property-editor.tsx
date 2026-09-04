@@ -3,9 +3,10 @@
 import { useRef } from "react";
 import { savePropertyAction, setArchivedAction } from "@/app/actions";
 import { MaterialIcon } from "@/components/material-icon";
+import { Turnstile } from "@/components/turnstile";
 import type { PropertyDto } from "@/lib/property-store";
 
-type Props = { property: PropertyDto; onClose: () => void };
+type Props = { property: PropertyDto; onClose: () => void; creating?: boolean };
 
 const statuses = [
   ["NEW", "Nueva"],
@@ -48,7 +49,7 @@ function TextArea({ label, name, value, rows = 4 }: { label: string; name: strin
   );
 }
 
-export function PropertyEditor({ property, onClose }: Props) {
+export function PropertyEditor({ property, onClose, creating = false }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const features = (category: "AREA" | "EQUIPMENT" | "OTHER") =>
     property.features.filter((item) => item.category === category).map((item) => item.name).join("\n");
@@ -64,7 +65,7 @@ export function PropertyEditor({ property, onClose }: Props) {
       <dialog className="editor-modal" open ref={dialogRef}>
         <div className="modal-heading">
           <div>
-            <span className="eyebrow">Editar propiedad</span>
+            <span className="eyebrow">{creating ? "Nueva propiedad manual" : property.publicationStatus === "DRAFT" ? "Revisar borrador" : "Editar propiedad"}</span>
             <h2>{property.title}</h2>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="Cerrar editor"><MaterialIcon name="close" /></button>
@@ -76,7 +77,7 @@ export function PropertyEditor({ property, onClose }: Props) {
             <h3>Fuente y publicación</h3>
             <div className="field-grid">
               <TextField label="Portal" name="sourceProvider" value={property.sourceProvider} />
-              <TextField label="URL" name="sourceUrl" type="url" value={property.sourceUrl} />
+              <TextField label="URL (opcional)" name="sourceUrl" type="url" value={property.sourceUrl} />
               <TextField label="ID del portal" name="sourceListingId" value={property.sourceListingId} />
               <TextField label="Clave" name="sourceListingKey" value={property.sourceListingKey} />
               <TextField label="Título" name="title" value={property.title} />
@@ -164,13 +165,20 @@ export function PropertyEditor({ property, onClose }: Props) {
 
           <div className="modal-actions">
             <button className="button subtle" type="button" onClick={onClose}>Cancelar</button>
-            <button className="button primary" type="submit">Guardar cambios</button>
+            {(creating || property.publicationStatus === "DRAFT") && <Turnstile action="property-save" />}
+            {creating || property.publicationStatus === "DRAFT" ? <>
+              <button className="button subtle" type="submit" name="publicationStatus" value="DRAFT">Guardar borrador</button>
+              <button className="button primary" type="submit" name="publicationStatus" value="PUBLISHED">Publicar</button>
+            </> : <>
+              <input type="hidden" name="publicationStatus" value="PUBLISHED" />
+              <button className="button primary" type="submit">Guardar cambios</button>
+            </>}
           </div>
         </form>
 
-        <form action={setArchivedAction.bind(null, property.id, !property.archivedAt)} className="archive-action">
+        {!creating && <form action={setArchivedAction.bind(null, property.id, !property.archivedAt)} className="archive-action">
           <button className="text-button" type="submit">{property.archivedAt ? "Restaurar propiedad" : "Archivar propiedad"}</button>
-        </form>
+        </form>}
       </dialog>
     </div>
   );

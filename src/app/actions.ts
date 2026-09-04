@@ -1,10 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { canonicalizeListingUrl } from "@/lib/property-input";
+import { auditMutation, protectExpensiveWrite } from "@/lib/public-write";
 
 const optionalText = z.string().trim().transform((value) => value || null);
 const optionalNumber = z.string().trim().transform((value, context) => {
@@ -19,9 +22,9 @@ const optionalNumber = z.string().trim().transform((value, context) => {
 const optionalInteger = optionalNumber.pipe(z.number().int().nullable());
 
 const editorSchema = z.object({
-  id: z.string().min(1),
+  id: z.string(),
   sourceProvider: z.string().trim().min(1),
-  sourceUrl: z.url(),
+  sourceUrl: z.string().trim().url().or(z.literal("")),
   sourceListingId: optionalText,
   sourceListingKey: optionalText,
   title: z.string().trim().min(1),
@@ -79,6 +82,7 @@ const editorSchema = z.object({
   areaFeatures: z.string(),
   equipmentFeatures: z.string(),
   otherFeatures: z.string(),
+  publicationStatus: z.enum(["DRAFT", "PUBLISHED"]),
 });
 
 function lines(value: string) {
@@ -101,12 +105,12 @@ export async function savePropertyAction(formData: FormData) {
     ...lines(data.otherFeatures).map((name) => ({ category: "OTHER" as const, name })),
   ];
   const imageRows = lines(data.images).map((url, sortOrder) => ({ url, sortOrder }));
-
-  await prisma.property.update({
-    where: { id: data.id },
-    data: {
+  if (imageRows.some(({ url }) => !z.url().safeParse(url).success)) {
+    throw new Error("Cada fotografía debe ser una URL válida.");
+  }
+  const propertyData = {
       sourceProvider: data.sourceProvider,
-      sourceUrl: canonicalizeListingUrl(data.sourceUrl),
+      sourceUrl: data.sourceUrl ? canonicalizeListingUrl(data.sourceUrl) : null,
       sourceListingId: data.sourceListingId,
       sourceListingKey: data.sourceListingKey,
       sourceMetadata: data.sourceMetadata as Prisma.InputJsonValue,
@@ -153,12 +157,43 @@ export async function savePropertyAction(formData: FormData) {
       notes: data.notes,
       visitAt: data.visitAt,
       rejectionReason: data.rejectionReason,
-      images: { deleteMany: {}, create: imageRows },
-      features: { deleteMany: {}, create: featureRows },
-    },
-  });
+      publicationStatus: data.publicationStatus,
+  } satisfies Prisma.PropertyUpdateInput;
+
+  let propertyId = data.id;
+  let wasDraft = false;
+  if (data.id) {
+    const existing = await prisma.property.findUniqueOrThrow({ where: { id: data.id }, select: { publicationStatus: true } });
+    wasDraft = existing.publicationStatus === "DRAFT";
+    let context: Awaited<ReturnType<typeof protectExpensiveWrite>> | null = null;
+    if (existing.publicationStatus === "DRAFT") {
+      context = await protectExpensiveWrite("draft-update", formData.get("cf-turnstile-response")?.toString() ?? null, await headers(), { perHour: 15, globalPerDay: 75 });
+    }
+    await prisma.property.update({
+      where: { id: data.id },
+      data: { ...propertyData, images: { deleteMany: {}, create: imageRows }, features: { deleteMany: {}, create: featureRows } },
+    });
+    if (context) await auditMutation("draft-update", "property", data.id, context.ipHash);
+  } else {
+    const requestHeaders = await headers();
+    const context = await protectExpensiveWrite("manual-create", formData.get("cf-turnstile-response")?.toString() ?? null, requestHeaders, { perHour: 10, globalPerDay: 50 });
+    const created = await prisma.property.create({
+      data: {
+        ...propertyData,
+        sourceObservedAt: new Date(),
+        sourceMetadata: { manual: true },
+        images: { create: imageRows },
+        features: { create: featureRows },
+      } as Prisma.PropertyCreateInput,
+    });
+    propertyId = created.id;
+    await auditMutation("manual-create", "property", created.id, context.ipHash);
+  }
   revalidatePath("/");
-  revalidatePath(`/properties/${data.id}`);
+  revalidatePath("/drafts");
+  revalidatePath(`/properties/${propertyId}`);
+  if (wasDraft) redirect(data.publicationStatus === "DRAFT" ? `/properties/${propertyId}/review` : `/properties/${propertyId}`);
+  if (!data.id) redirect(data.publicationStatus === "DRAFT" ? `/properties/${propertyId}/review` : `/properties/${propertyId}`);
 }
 
 const decisionSchema = z.object({

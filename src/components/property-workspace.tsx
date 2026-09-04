@@ -151,6 +151,8 @@ export function PropertyWorkspace({ initialProperties }: { initialProperties: Pr
               {mode === "list" ? "Lista" : mode === "split" ? "Mitad" : "Mapa"}
             </button>
           ))}
+          <Link className="topbar-link" href="/drafts">Borradores</Link>
+          <Link className="topbar-add" href="/properties/new"><MaterialIcon name="add" /> Agregar</Link>
         </div>
       </header>
 
@@ -189,7 +191,7 @@ export function PropertyWorkspace({ initialProperties }: { initialProperties: Pr
               <PropertyCard key={property.id} property={property} selected={property.id === selectedId} onSelect={() => setSelectedId(property.id)} />
             ))
           ) : (
-            <div className="empty-state"><span><MaterialIcon name="home" /></span><h2>No hay propiedades aquí</h2><p>Ajusta los filtros o agrega una mediante la API local.</p></div>
+            <div className="empty-state"><span><MaterialIcon name="home" /></span><h2>No hay propiedades aquí</h2><p>Ajusta los filtros o agrega una por URL o manualmente.</p><Link className="button primary" href="/properties/new">Agregar propiedad</Link></div>
           )}
         </div>
         <div className="map-pane">
